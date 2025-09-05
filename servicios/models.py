@@ -15,27 +15,41 @@ class Cliente(models.Model):
         return f"{self.nombre} {self.apellido}"
 
 
-class Equipo(models.Model):
-    TIPO_CHOICES = (
-        ('celular', 'Celular'),
-        ('tablet', 'Tablet'),
-        ('parlante', 'Parlante'),
-        ('auricular', 'Auricular'),
-        ('otros', 'Otros'),
-    )
+class TipoEquipo(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
 
+    def __str__(self):
+        return self.nombre
+    
+class Marca(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    def __str__(self):
+        return self.nombre
+
+# servicios/models.py
+
+class Modelo(models.Model):
+    nombre = models.CharField(max_length=50, unique=True) # Agregamos unique=True
+    marca = models.ForeignKey(Marca, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.marca.nombre} {self.nombre}"
+    
+
+class Equipo(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    tipo_equipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    marca = models.CharField(max_length=50)
-    modelo = models.CharField(max_length=50)
+    tipo_equipo = models.ForeignKey(TipoEquipo, on_delete=models.SET_NULL, null=True)
+    marca = models.ForeignKey(Marca, on_delete=models.SET_NULL, null=True)
+    modelo = models.ForeignKey(Modelo, on_delete=models.SET_NULL, null=True)
     imei = models.CharField(max_length=20, blank=True, null=True)
     serie = models.CharField(max_length=50, blank=True, null=True)
     accesorios = models.TextField(blank=True)
     falla_declarada = models.TextField()
 
     def __str__(self):
-        return f"{self.tipo_equipo} {self.marca} {self.modelo} - Cliente: {self.cliente.nombre}"
-    
+        # Corrección: Acceder al nombre del tipo de equipo
+        return f"{self.tipo_equipo.nombre} {self.marca} {self.modelo} - Cliente: {self.cliente.nombre}"
+
+
 class OrdenDeServicio(models.Model):
     ESTADO_CHOICES = (
         ('ingresado', 'Equipo Ingresado'),
